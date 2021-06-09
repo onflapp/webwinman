@@ -1,0 +1,18 @@
+{
+  "name": "ed",
+  "productName": "Electron API Demos",
+  "version": "2.0.2",
+  "description": "Electron interactive API demos",
+  "main": "main.js",
+  "bin": "cli.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "GitHub",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {
+    "electron": "^9.4.0",
+    "xterm": "^4.12.0"
+  }
+}
