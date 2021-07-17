@@ -1,5 +1,14 @@
-var $ = jQuery = require("./libs/jquery/jquery.js");
-var $ui = require("./libs/jquery/jquery-ui.js");
+function DWindowToJSON(el) {
+  let $el = $(el);
+  return {
+    position: $el.position(),
+    size: {
+      width: $el.width(),
+      height: $el.height()
+    },
+    href: $el.find('webview').attr('src')
+  };
+}
 
 function DWorkspace(opts) {
   let self = this;
@@ -35,7 +44,19 @@ function DWorkspace(opts) {
     });
 
     win.$el.on('click', '.clone', function(evt) {
-      self.createWindow();
+      let win = $(evt.target).parents('.dwindow')[0];
+      let opts = DWindowToJSON(win);
+      opts.position.left += 30;
+      opts.position.top += 30;
+      self.createWindow(opts);
+    });
+
+    win.$el.on('mousedown', '.title', function(evt) {
+      let $win = $(evt.target).parents('.dwindow');
+      $win.parent().children().each(function (n, it) {
+        $(it).css('z-index', '');
+      });
+      $win.css('z-index', '1');
     });
 
   };
@@ -43,14 +64,9 @@ function DWorkspace(opts) {
   this.toJSON = function() {
     let windows = [];
     self.$el.find('.dwindow').each(function (n, it) {
-      windows.push({
-        position: $(it).position(),
-        size: {
-          width: $(it).width(),
-          height: $(it).height()
-        },
-        href: $(it).find('webview').attr('src')
-      });
+      windows.push(
+        DWindowToJSON(it)
+      );
     });
 
     return windows;
@@ -64,6 +80,7 @@ function DWindow(opts) {
       <div class="header">
         <span class="close">X</span>
         <span class="clone">C</span>
+        <span class="back">B</span>
         <span class="title">untitled</span>
         <span class="address"><input type="text"/></span>
       </div>
@@ -92,8 +109,13 @@ function DWindow(opts) {
     self.loadContentURL(val);
   });
 
+  this.$el.on('click', '.back', function(evt) {
+    let wv = self.$el.find('webview')[0];
+    wv.goBack();
+  });
+
   this.loadContentURL = function(url) {
-    let ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36';
+    let ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:88.0) Gecko/20100101 Firefox/88.0';
 
     self.$el.find('.content').html(`
       <webview useragent="${ua}" src="${url}"></webview>
@@ -110,5 +132,19 @@ function DWindow(opts) {
       self.$el.find('.title').html(wv.getTitle());
     });
 
+    wv.addEventListener('console-message', function(evt) {
+      console.log('Guest page logged a message:', evt.message);
+    });
+
+    wv.addEventListener('new-window', function(evt) {
+      console.log('new window');
+      wv.loadURL(evt.url);
+    });
+
+    wv.addEventListener('close', function(evt) {
+      console.log('close window');
+    });
+
+    window.initActionCapture();
   };
 }

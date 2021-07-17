@@ -23,11 +23,14 @@ $(function () {
     window.workspace.createWindow();
   });
 
-  $('body').on('resizestop', '.dwindow', function(evt, ui) {
+  $('body').on('click', '.save-workspace', function() {
     SaveWorkspace();
   });
 
+
+  $('body').on('resizestop', '.dwindow', function(evt, ui) {
+  });
+
   $('body').on('dragstop', '.dwindow', function(evt, ui) {
-    SaveWorkspace();
   });
 });
